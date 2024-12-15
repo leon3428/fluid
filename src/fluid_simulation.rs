@@ -4,8 +4,8 @@ use nalgebra::{Normed, Vector2};
 
 const DT: f32 = 0.001;
 const REST_DENS: f32 = 1.0;
-const GAS_CONST: f32 = 100.0;
-pub const G: Vector2<f32> = Vector2::new(0.0, -9.81);
+const GAS_CONST: f32 = 10.0;
+pub const G: Vector2<f32> = Vector2::new(0.0, -1.0);
 
 pub struct FluidSimulation {
     smoothing_radius: f32,
@@ -41,8 +41,8 @@ impl FluidSimulation {
                 let jitter_y = (rand::random::<f32>() - 0.5) / 50.0;
 
                 positions.push(Vector2::new(
-                    j as f32 * smoothing_radius + left + jitter_x,
-                    i as f32 * smoothing_radius + top + jitter_y,
+                    j as f32 * smoothing_radius * 0.95 + left + jitter_x,
+                    i as f32 * smoothing_radius * 0.95 + top + jitter_y,
                 ));
 
                 velocities.push(Vector2::new(0.0, 0.0));
@@ -92,8 +92,8 @@ impl FluidSimulation {
                     force += r.normalize() * self.mass * (self.pressures[i] + self.pressures[j])
                         / (2.0 * self.densities[j] + 1e-6)
                         * spiky_grad
-                        * (self.smoothing_radius - r_norm).powi(3);
-                    // force += self.viscosity * self.mass * (self.velocities[j] - self.velocities[i]) / self.densities[j] * visc_lap * (self.smoothing_radius - r_norm);
+                        * (self.smoothing_radius - r_norm).powi(2);
+                    force += self.viscosity * self.mass * (self.velocities[j] - self.velocities[i]) / ( self.densities[j] + 1e-6) * visc_lap * (self.smoothing_radius - r_norm);
                 }
             }
             force += G * self.densities[i];

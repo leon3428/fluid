@@ -39,7 +39,12 @@ impl State {
         let pipeline = create_particle_render_pipeline(&device, &config);
         surface.configure(&device, &config);
 
-        let simulation = FluidSimulation::with_grid_initialization(0.04, -0.8, 0.01, 200.0, ROWS, COLS, TOP, LEFT);
+        let smoothing_radius = 0.04;
+        let bound_damping = -0.5;
+        let mass = 0.001;
+        let viscosity = 0.001;
+
+        let simulation = FluidSimulation::with_grid_initialization(smoothing_radius, bound_damping, mass, viscosity, ROWS, COLS, TOP, LEFT);
         let particle_buffer = Self::create_particle_buffer(&device, simulation.positions_data());
 
         Self {
