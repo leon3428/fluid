@@ -7,7 +7,7 @@ struct VertexOutput {
     @location(0) center: vec2<f32>,
 };
 
-const SIZE: f32 = 0.05;
+const SIZE: f32 = 0.01;
 
 @vertex
 fn vs_main(

@@ -1,4 +1,4 @@
-use fluid::run;
+use fluid::application::run;
 
 fn main() {
     run();
