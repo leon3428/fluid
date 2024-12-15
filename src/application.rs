@@ -1,14 +1,17 @@
+use std::time;
+
 use winit::{application::ApplicationHandler, dpi::PhysicalSize, event::WindowEvent, event_loop::{ActiveEventLoop, ControlFlow, EventLoop}, window::{Window, WindowId}};
 
 use crate::application_state::State;
 
 pub struct App {
     state: Option<State>,
+    last_frame_time: time::Instant,
 }
 
 impl App {
     pub fn new() -> Self {
-        Self { state: None }
+        Self { state: None, last_frame_time: time::Instant::now() }
     }
 }
 
@@ -19,6 +22,7 @@ impl ApplicationHandler for App {
             .unwrap();
 
         self.state = Some(State::new(window));
+        self.last_frame_time = time::Instant::now();
     }
 
     fn window_event(
@@ -34,11 +38,15 @@ impl ApplicationHandler for App {
                 WindowEvent::CloseRequested => {
                     event_loop.exit();
                 }
-                WindowEvent::Resized(physical_size) => {
-                    self.state.as_mut().unwrap().resize(physical_size);
-                }
                 WindowEvent::RedrawRequested => {
-                    self.state.as_mut().unwrap().render().unwrap();
+                    let now = time::Instant::now();
+                    let delta_time = now.duration_since(self.last_frame_time);
+                    self.last_frame_time = now;
+                    let delta_seconds = delta_time.as_secs_f32();
+
+                    let state = self.state.as_mut().unwrap();
+                    state.update(delta_seconds);
+                    state.render().unwrap();
                 }
                 _ => {}
             }

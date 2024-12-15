@@ -1,5 +1,3 @@
-use crate::fluid_simulation::Particle;
-
 pub fn create_particle_render_pipeline(
     device: &wgpu::Device,
     config: &wgpu::SurfaceConfiguration,
@@ -23,7 +21,7 @@ pub fn create_particle_render_pipeline(
             module: &shader,
             entry_point: Some("vs_main"),
             buffers: &[wgpu::VertexBufferLayout {
-                array_stride: std::mem::size_of::<Particle>() as wgpu::BufferAddress,
+                array_stride: std::mem::size_of::<nalgebra::Vector2<f32>>() as wgpu::BufferAddress,
                 step_mode: wgpu::VertexStepMode::Instance,
                 attributes: &[wgpu::VertexAttribute {
                     offset: 0,

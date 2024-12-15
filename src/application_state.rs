@@ -9,7 +9,6 @@ use crate::{fluid_simulation::FluidSimulation, pipelines::create_particle_render
 // TODO: remove
 const ROWS: u32 = 32;
 const COLS: u32 = 32;
-const OFFSET: f32 = 0.03;
 const TOP: f32 = -0.5;
 const LEFT: f32 = -0.5;
 
@@ -40,8 +39,8 @@ impl State {
         let pipeline = create_particle_render_pipeline(&device, &config);
         surface.configure(&device, &config);
 
-        let simulation = FluidSimulation::with_grid_initialization(ROWS, COLS, TOP, LEFT, OFFSET);
-        let particle_buffer = Self::create_particle_buffer(&device, bytemuck::cast_slice(simulation.particles()));
+        let simulation = FluidSimulation::with_grid_initialization(0.04, -0.8, 0.01, 200.0, ROWS, COLS, TOP, LEFT);
+        let particle_buffer = Self::create_particle_buffer(&device, simulation.positions_data());
 
         Self {
             surface,
@@ -60,7 +59,7 @@ impl State {
         device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Particle buffer"),
             contents: data,
-            usage: wgpu::BufferUsages::VERTEX,
+            usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
         })
     }
 
@@ -120,15 +119,8 @@ impl State {
         })
     }
 
-    pub fn resize(&mut self, new_size: PhysicalSize<u32>) {
-        if new_size.width > 0 && new_size.height > 0 {
-            self.size = new_size;
-
-            self.config.width = new_size.width;
-            self.config.height = new_size.height;
-
-            self.surface.configure(&self.device, &self.config);
-        }
+    pub fn update(&mut self, dt: f32) {
+        self.simulation.update(dt);
     }
 
     pub fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
@@ -164,6 +156,7 @@ impl State {
             render_pass.draw(0..4, 0..self.simulation.num_particles());
         }
 
+        self.queue.write_buffer(&self.particle_buffer, 0, self.simulation.positions_data());
         self.queue.submit(std::iter::once(encoder.finish()));
         output.present();
 
