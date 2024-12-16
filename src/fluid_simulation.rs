@@ -2,7 +2,7 @@ use std::f32::consts::PI;
 
 use nalgebra::{Normed, Vector2};
 
-const DT: f32 = 0.001;
+const DT: f32 = 0.0001;
 const REST_DENS: f32 = 1.0;
 const GAS_CONST: f32 = 10.0;
 pub const G: Vector2<f32> = Vector2::new(0.0, -1.0);
@@ -64,6 +64,13 @@ impl FluidSimulation {
     pub fn positions_data(&self) -> &[u8] {
         let len = self.positions.len() * std::mem::size_of::<Vector2<f32>>();
         let ptr = self.positions.as_ptr() as *const u8;
+
+        unsafe { std::slice::from_raw_parts(ptr, len) }
+    }
+
+    pub fn density_data(&self) -> &[u8] {
+        let len = self.densities.len() * std::mem::size_of::<f32>();
+        let ptr = self.densities.as_ptr() as *const u8;
 
         unsafe { std::slice::from_raw_parts(ptr, len) }
     }
